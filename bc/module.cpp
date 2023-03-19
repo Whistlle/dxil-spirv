@@ -1990,7 +1990,13 @@ bool ModuleParseContext::parse_type(const BlockOrRecord &child)
 		type = StructType::get(*context, std::move(members));
 		break;
 	}
-
+	case TypeRecord::OPAQUE_TYPE:
+	{
+		if (child.ops.size() != 1)
+			return false;
+		type = StructType::get(*context, std::move(Vector<Type *>()));
+		break;
+	}
 	case TypeRecord::VECTOR:
 	{
 		if (child.ops.size() < 2)
@@ -2308,7 +2314,9 @@ Module *parseIR(LLVMContext &context, const void *data, size_t size)
 
 	// We should have consumed all bits, only one top-level block.
 	if (!reader.AtEndOfStream())
-		return nullptr;
+	{
+		LOGW("Warnging: We should have consumed all bits, only one top-level block.");
+	}
 
 	auto *module = context.construct<Module>(context);
 
